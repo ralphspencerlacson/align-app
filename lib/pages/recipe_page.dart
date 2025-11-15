@@ -1,3 +1,4 @@
+import 'package:align_app/models/recipe.dart';
 import 'package:align_app/services/recipe_service.dart';
 import 'package:flutter/material.dart';
 
@@ -11,9 +12,11 @@ class RecipePage extends StatefulWidget {
 class _RecipePageState extends State<RecipePage> {
   final TextEditingController _ingredientsController = TextEditingController();
 
+  // Models
+  Recipe? _recipe;
+
   // State variables
   bool _isLoading = false;
-  String _recipe = '';
   String? _errorMessage;
 
   void _generateRecipe() async {
@@ -27,7 +30,7 @@ class _RecipePageState extends State<RecipePage> {
     setState(() {
         _isLoading = true;
         _errorMessage = null;
-        _recipe = '';
+        _recipe = null;
     });
 
     try {
@@ -91,7 +94,7 @@ class _RecipePageState extends State<RecipePage> {
                 ),
               ],
 
-              if(!_isLoading && _recipe.isNotEmpty) ... [
+              if(!_isLoading && _recipe != null) ... [
                 Expanded(
                     child: Container(
                         padding: const EdgeInsets.all(16),
@@ -101,9 +104,116 @@ class _RecipePageState extends State<RecipePage> {
                             border: Border.all(color: Colors.green.shade200),
                         ),
                         child: SingleChildScrollView(
-                            child: Text(
-                                _recipe,
-                                style: const TextStyle(fontSize: 16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Image
+                                if (_recipe!.image.isNotEmpty) ...[
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Image.network(
+                                      _recipe!.image,
+                                      height: 200,
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return Container(
+                                          height: 200,
+                                          color: Colors.grey.shade300,
+                                          child: const Center(
+                                            child: Text('Image not available'),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                ],
+                                
+                                // Title
+                                Text(
+                                  _recipe!.title,
+                                  style: const TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+
+                                // Description
+                                Text(
+                                  _recipe!.description,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+
+                                // Info Row
+                                Row(
+                                  children: [
+                                    Text('Servings: ${_recipe!.servings}'),
+                                    const SizedBox(width: 16),
+                                    Text('Total Time: ${_recipe!.totalTime}'),
+                                    const SizedBox(width: 16),
+                                    Text('Difficulty: ${_recipe!.difficulty}'),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+
+                                // Ingredients Section
+                                const Text(
+                                  'Ingredients:',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                ...(_recipe!.ingredients.map((ingredient) => 
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 4),
+                                    child: Text('• $ingredient'),
+                                  )
+                                )),
+                                const SizedBox(height: 16),
+
+                                // Instructions Section
+                                const Text(
+                                  'Instructions:',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                ...(_recipe!.instructions.asMap().entries.map((entry) => 
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 8),
+                                    child: Text('${entry.key + 1}. ${entry.value}'),
+                                  )
+                                )),
+                                const SizedBox(height: 16),
+
+                                // Tips Section
+                                if (_recipe!.tips.isNotEmpty) ...[
+                                  const Text(
+                                    'Tips:',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  ...(_recipe!.tips.map((tip) => 
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 4),
+                                      child: Text('💡 $tip'),
+                                    )
+                                  )),
+                                ],
+                              ],
                             )
                         )
                     )
