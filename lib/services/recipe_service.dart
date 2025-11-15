@@ -1,12 +1,13 @@
 
 import 'dart:convert';
 
+import 'package:align_app/models/recipe.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class RecipeService {
   
-  static Future<String> generateRecipe(String ingredients) async {
+  static Future<Recipe> generateRecipe(String ingredients) async {
     final _baseUrl = dotenv.env['AI_API_BASEURL'] ?? '';
     final _apiKey = dotenv.env['AI_API_KEY'] ?? '';
 
@@ -32,12 +33,27 @@ class RecipeService {
         'messages': [
           {
             'role': 'system',
-            'content': '''You are a helpful cooking assistant. Generate detailed, easy-to-follow recipes using the provided ingredients. 
+            'content': '''You are a helpful cook expert from $_region. Your task is to identify and suggest ACTUAL, TRADITIONAL Filipino recipes based on the provided ingredients.
+
+              RULES:
+              1. Always suggest a REAL, well-known $_region dish name from traditional cuisine
+              2. Match the ingredients to the closest traditional $_region recipe
+              3. If ingredients match multiple dishes, choose the most popular/common one
+              4. DO NOT invent new dish names - use established traditional recipe names from $_region
+              5. Focus on authentic $_region cooking methods and flavors
+              6. Use cooking techniques and ingredients commonly available in $_region
+
+              APPROACH:
+              - Analyze the provided ingredients
+              - Identify what traditional $_region dish they best represent
+              - Provide an authentic recipe for that dish
+              - Include traditional cooking methods from $_region cuisine
+              - Use measurements and ingredients commonly found in $_region
 
               IMPORTANT: Return your response as a valid JSON object with this exact structure:
               {
-                "title": "Recipe Name",
-                "description": "Brief description of the dish",
+                "title": "Traditional $_region Recipe Name",
+                "description": "Brief description of this traditional $_region dish",
                 "servings": "Number of servings",
                 "prep_time": "Preparation time in minutes",
                 "cook_time": "Cooking time in minutes",
@@ -48,16 +64,20 @@ class RecipeService {
                   "ingredient 2 with measurement"
                 ],
                 "instructions": [
-                  "Step 1 instruction",
+                  "Step 1 instruction using traditional $_region cooking methods",
                   "Step 2 instruction"
                 ],
                 "tips": [
-                  "Cooking tip 1",
+                  "Authentic $_region cooking tips and variations",
                   "Cooking tip 2"
-                ]
+                ],
+                "image": "https://example.com/food-image-url-related-to-this-recipe.jpg"
               }
 
-              Make sure recipes are suitable for cooking in the $_region with locally available ingredients.'''
+              For the image field, get a related food image URL that would be appropriate for this recipe.
+
+              Focus on authentic $_region recipes that families in $_region actually cook.
+              Make sure all ingredients and cooking methods are suitable and available in $_region.'''
           },
           {
             'role': 'user',
@@ -65,7 +85,7 @@ class RecipeService {
           },
         ],
         'max_tokens': 1500,
-        'temperature': 0.7,
+        'temperature': 0.3,
       };
 
       print('Making API request to: $_baseUrl');
@@ -82,7 +102,10 @@ class RecipeService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final recipe = data['choices'][0]['message']['content'];
+        final recipeString = data['choices'][0]['message']['content'];
+
+        final recipeJson = jsonDecode(recipeString);
+        final recipe = Recipe.fromJson(recipeJson);
 
         return recipe;
       } else {
