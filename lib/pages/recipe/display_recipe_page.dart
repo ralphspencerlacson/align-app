@@ -1,5 +1,6 @@
 import 'package:align_app/models/recipe.dart';
 import 'package:align_app/widgets/info_card.dart';
+import 'package:align_app/widgets/timeline.dart';
 import 'package:flutter/material.dart';
 
 class DisplayRecipePage extends StatelessWidget {
@@ -29,8 +30,8 @@ class DisplayRecipePage extends StatelessWidget {
                       if (recipe.image.isNotEmpty) ...[
                         ClipRRect(
                           borderRadius: BorderRadius.only(
-                            bottomLeft: Radius.circular(32),
-                            bottomRight: Radius.circular(32),
+                            bottomLeft: Radius.circular(12),
+                            bottomRight: Radius.circular(12),
                           ),
                           child: Image.network(
                             recipe.image,
@@ -228,95 +229,13 @@ class DisplayRecipePage extends StatelessWidget {
                       const SizedBox(height: 12),
                       
                       // Timeline Instructions
-                      Column(
-                        children: recipe.instructions.asMap().entries.map((entry) {
-                          final isLast = entry.key == recipe.instructions.length - 1;
-                          
-                          return IntrinsicHeight(
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Timeline column
-                                Column(
-                                  children: [
-                                    // Step number circle
-                                    Container(
-                                      width: 32,
-                                      height: 32,
-                                      decoration: BoxDecoration(
-                                        color: Colors.orange,
-                                        shape: BoxShape.circle,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.orange.withOpacity(0.3),
-                                            blurRadius: 4,
-                                            offset: const Offset(0, 2),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          '${entry.key + 1}',
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    
-                                    // Connecting line (only if not the last item)
-                                    if (!isLast) ...[
-                                      Expanded(
-                                        child: Container(
-                                          width: 2,
-                                          color: Colors.orange.withOpacity(0.3),
-                                          margin: const EdgeInsets.only(top: 8, bottom: 8),
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                                
-                                const SizedBox(width: 16),
-                                
-                                // Instruction content
-                                Expanded(
-                                  child: Container(
-                                    margin: const EdgeInsets.only(bottom: 20),
-                                    padding: const EdgeInsets.all(16),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                        color: Colors.grey.shade200,
-                                        width: 1,
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.05),
-                                          blurRadius: 6,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Text(
-                                      entry.value,
-                                      style: const TextStyle(
-                                        fontSize: 15,
-                                        height: 1.4,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              
-                              ],
-                            ),
-                          );
-                        }).toList(),
+                      Timeline(
+                        items: recipe.instructions,
+                        accentColor: Colors.orange,
+                        circleSize: 36,
+                        fontSize: 16,
                       ),
+
                       // Tips Section
                       if (recipe.tips.isNotEmpty) ...[
                         const Text(

@@ -54,10 +54,10 @@ class RecipeService {
               {
                 "title": "Traditional $_region Recipe Name",
                 "description": "Brief description of this traditional $_region dish. 2-3 sentences only.",
-                "servings": "Number of servings: 4",
-                "prep_time": "Preparation time in minutes: 15 mins",
-                "cook_time": "Cooking time in minutes: 45 mins",
-                "total_time": "Total time in minutes: 60 mins",
+                "servings": "Number of servings",
+                "prep_time": "Preparation time in minutes",
+                "cook_time": "Cooking time in minutes",
+                "total_time": "Total time in minutes",
                 "difficulty": "Easy/Medium/Hard",
                 "ingredients": [
                   {
