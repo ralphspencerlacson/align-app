@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'pages/recipe_page.dart';
+import 'pages/recipe/generate_recipe_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
         // appBar: AppBar(
         //   title: const Text('Align App'),
         // ),
-        body: const RecipePage(),
+        body: const GenerateRecipePage(),
       ),
     );
   }
