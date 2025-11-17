@@ -1,3 +1,5 @@
+import 'package:align_app/models/ingredient.dart';
+
 class Recipe {
   final String title;
   final String description;
@@ -6,7 +8,7 @@ class Recipe {
   final String cookTime;
   final String totalTime;
   final String difficulty;
-  final List<String> ingredients;
+  final List<Ingredient> ingredients;
   final List<String> instructions;
   final List<String> tips;
   final String image;
@@ -34,7 +36,9 @@ class Recipe {
       cookTime: json['cook_time'],
       totalTime: json['total_time'],
       difficulty: json['difficulty'],
-      ingredients: List<String>.from(json['ingredients']),
+      ingredients: (json['ingredients'] as List)
+          .map((ingredient) => Ingredient.fromJson(ingredient))
+          .toList(),
       instructions: List<String>.from(json['instructions']),
       tips: List<String>.from(json['tips']),
       image: json['image'],
