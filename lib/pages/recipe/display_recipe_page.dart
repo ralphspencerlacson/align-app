@@ -117,7 +117,7 @@ class DisplayRecipePage extends StatelessWidget {
                 ),
                 
                 // Add spacing for the overlapping content
-                const SizedBox(height: 240),
+                const SizedBox(height: 380),
 
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -178,10 +178,6 @@ class DisplayRecipePage extends StatelessWidget {
                                   Container(
                                     width: 40,
                                     height: 40,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.8),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
                                     child: Center(
                                       child: Text(
                                         ingredient.icon,
@@ -233,46 +229,97 @@ class DisplayRecipePage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: recipe.instructions.asMap().entries.map((entry) => 
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(6),
+                      
+                      // Timeline Instructions
+                      Column(
+                        children: recipe.instructions.asMap().entries.map((entry) {
+                          final isLast = entry.key == recipe.instructions.length - 1;
+                          
+                          return IntrinsicHeight(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Timeline column
+                                Column(
+                                  children: [
+                                    // Step number circle
+                                    Container(
+                                      width: 32,
+                                      height: 32,
+                                      decoration: BoxDecoration(
+                                        color: Colors.orange,
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.orange.withOpacity(0.3),
+                                            blurRadius: 4,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          '${entry.key + 1}',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    
+                                    // Connecting line (only if not the last item)
+                                    if (!isLast) ...[
+                                      Expanded(
+                                        child: Container(
+                                          width: 2,
+                                          color: Colors.orange.withOpacity(0.3),
+                                          margin: const EdgeInsets.only(top: 8, bottom: 8),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                                
+                                const SizedBox(width: 16),
+                                
+                                // Instruction content
+                                Expanded(
+                                  child: Container(
+                                    margin: const EdgeInsets.only(bottom: 20),
+                                    padding: const EdgeInsets.all(16),
                                     decoration: BoxDecoration(
-                                      color: Colors.blue.shade600,
+                                      color: Colors.white,
                                       borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: Colors.grey.shade200,
+                                        width: 1,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.05),
+                                          blurRadius: 6,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
                                     ),
                                     child: Text(
-                                      '${entry.key + 1}',
+                                      entry.value,
                                       style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
+                                        fontSize: 15,
+                                        height: 1.4,
+                                        color: Colors.black87,
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      entry.value,
-                                      style: const TextStyle(fontSize: 16),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                          ).toList(),
-                        ),
+                                ),
+                              
+                              ],
+                            ),
+                          );
+                        }).toList(),
                       ),
-                      const SizedBox(height: 24),
-
                       // Tips Section
                       if (recipe.tips.isNotEmpty) ...[
                         const Text(
