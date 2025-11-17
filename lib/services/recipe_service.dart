@@ -53,11 +53,11 @@ class RecipeService {
               IMPORTANT: Return your response as a valid JSON object with this exact structure:
               {
                 "title": "Traditional $_region Recipe Name",
-                "description": "Brief description of this traditional $_region dish",
-                "servings": "Number of servings",
-                "prep_time": "Preparation time in minutes",
-                "cook_time": "Cooking time in minutes",
-                "total_time": "Total time in minutes",
+                "description": "Brief description of this traditional $_region dish. 2-3 sentences only.",
+                "servings": "Number of servings: 4",
+                "prep_time": "Preparation time in minutes: 15 mins",
+                "cook_time": "Cooking time in minutes: 45 mins",
+                "total_time": "Total time in minutes: 60 mins",
                 "difficulty": "Easy/Medium/Hard",
                 "ingredients": [
                   {
@@ -72,8 +72,8 @@ class RecipeService {
                   }
                 ],
                 "instructions": [
-                  "Step 1 instruction using traditional $_region cooking methods",
-                  "Step 2 instruction"
+                  "Instruction using traditional $_region cooking methods",
+                  "Instruction"
                 ],
                 "tips": [
                   "Authentic $_region cooking tips and variations",

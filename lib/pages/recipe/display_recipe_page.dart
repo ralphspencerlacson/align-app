@@ -40,10 +40,7 @@ class DisplayRecipePage extends StatelessWidget {
                             errorBuilder: (context, error, stackTrace) {
                               return Container(
                                 height: 300,
-                                color: Colors.grey.shade300,
-                                child: const Center(
-                                  child: Text('Image not available'),
-                                ),
+                                color: Colors.orange,
                               );
                             },
                           ),
@@ -117,7 +114,7 @@ class DisplayRecipePage extends StatelessWidget {
                 ),
                 
                 // Add spacing for the overlapping content
-                const SizedBox(height: 380),
+                const SizedBox(height: 340),
 
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
