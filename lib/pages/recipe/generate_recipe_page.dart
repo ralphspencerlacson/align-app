@@ -22,7 +22,7 @@ class _GenerateRecipePageState extends State<GenerateRecipePage> {
   bool _isAnalyzing = false;
   String? _errorMessage;
   File? _selectedImage;
-  List<String> _analyzedIngredients = [];
+  List<String> _ingredientsList = [];
 
   // Objects
   final ImagePicker _picker = ImagePicker();
@@ -100,16 +100,12 @@ class _GenerateRecipePageState extends State<GenerateRecipePage> {
       final ingredients = await GroqAIService.analyzeIngredients(_selectedImage!);
 
       setState(() {
-        _analyzedIngredients = ingredients;
         _isAnalyzing = false;
 
-        String currentIngredients = _ingredientsController.text.trim();
-        String newIngredients = ingredients.join(', ');
-        
-        if(currentIngredients.isEmpty) {
-          _ingredientsController.text = newIngredients;
-        } else {
-          _ingredientsController.text = '$currentIngredients, $newIngredients';
+        for (String ingredient in ingredients) {
+          if (!_ingredientsList.contains(ingredient.trim().toLowerCase())) {
+            _ingredientsList.add(ingredient.trim());
+          }
         }
       });
     } catch (e) {
@@ -120,8 +116,25 @@ class _GenerateRecipePageState extends State<GenerateRecipePage> {
     }
   }
 
+  void _addIngredient() {
+    final ingredient = _ingredientsController.text.trim();
+    if(ingredient.isNotEmpty && !_ingredientsList.contains(ingredient)) {
+      setState(() {
+        _ingredientsList.add(ingredient);
+        _ingredientsController.clear();
+        _errorMessage = null;
+      });
+    }
+  }
+
+  void _removeIngredient(int index) {
+    setState(() {
+      _ingredientsList.removeAt(index);
+    });
+  }
+
   void _generateRecipe() async {
-    if(_ingredientsController.text.trim().isEmpty) {
+    if(_ingredientsList.isEmpty) {
         setState(() {
             _errorMessage = 'Please enter at least one ingredient.';
         });
@@ -159,98 +172,148 @@ class _GenerateRecipePageState extends State<GenerateRecipePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 32.0),
-      child: Column(
+    return Scaffold(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 32.0),
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-              const Text(
-                  'Enter ingredients or scan/upload an ingredients from your fridge...',
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                  ),
-              ),
-              const SizedBox(height: 10),
+            const SizedBox(height: 40),
 
-              if (_selectedImage != null) ... [
-                Container(
-                  height: 200,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.file(
-                      _selectedImage!,
-                      fit: BoxFit.cover,
-                    ),
-                  )
+            const Text(
+              'Enter ingredients or scan/upload an image from your fridge...',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 40),
+
+            if (_selectedImage != null) ...[
+              Container(
+                height: 200,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                const SizedBox(height: 10,),
-              ],
-
-              // Camera and Gallery Buttons
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _isAnalyzing ? null : _pickImageFromCamera,
-                      icon: const Icon(Icons.camera_alt),
-                      label: const Text('Camera')
-                    ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.file(
+                    _selectedImage!,
+                    fit: BoxFit.cover,
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _isAnalyzing ? null : _pickImageFromGallery,
-                      icon: const Icon(Icons.photo_library),
-                      label: const Text('Gallery'),
-                    ),
-                  )
-                ],
+                )
               ),
               const SizedBox(height: 10),
+            ],
 
-              // Ingredients TextField
-              TextField(
-                  controller: _ingredientsController,
-                  decoration: const InputDecoration(
-                      hintText: 'e.g., chicken, rice, onions',
+            // Ingredient TextField
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _ingredientsController,
+                    decoration: const InputDecoration(
+                      hintText: 'Add ingredient (e.g., chicken)',
                       border: OutlineInputBorder(),
+                    ),
+                    onSubmitted: (_) => _addIngredient(),
                   ),
-                  maxLines: 3,
+                ),
+                const SizedBox(width: 10),
+                ElevatedButton(
+                  onPressed: _addIngredient,
+                  child: const Icon(Icons.add),
+                )
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // Ingredient Display
+            if (_ingredientsList.isNotEmpty) ...[
+              const Text(
+                'Ingredients:',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                )
+              ),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8.0,
+                runSpacing: 4.0,
+                children: _ingredientsList.asMap().entries.map((entry) {
+                  return Chip(
+                    label: Text(entry.value),
+                    deleteIcon: const Icon(Icons.close, size: 18),
+                    onDeleted: () => _removeIngredient(entry.key),
+                    backgroundColor: Colors.orange.shade100,
+                  );
+                }).toList(),
               ),
               const SizedBox(height: 20),
+            ],
 
-              // Submit button
-              ElevatedButton(
-                onPressed: _isLoading ? null : _generateRecipe,
-                child: _isLoading ? const CircularProgressIndicator(color: Colors.white) : const Text('Generate recipe')
-              ),
-              SizedBox(height: 20),
-
-              // Error message display
-              if(_errorMessage != null) ... [
-                Container(
-                    padding: const EdgeInsets.all(8.0),
-                    decoration: BoxDecoration(
-                        color: Colors.red.shade100,
-                        borderRadius: BorderRadius.circular(4.0),
-                    ),
-                    child: Text(
-                        _errorMessage!,
-                        style: const TextStyle(color: Colors.red),
-                    )
+            // Error message display
+            if(_errorMessage != null) ...[
+              Container(
+                padding: const EdgeInsets.all(8.0),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade100,
+                  borderRadius: BorderRadius.circular(4.0),
                 ),
-              ],
+                child: Text(
+                  _errorMessage!,
+                  style: const TextStyle(color: Colors.red),
+                )
+              ),
+            ],
           ],
+        ),
       ),
+      bottomNavigationBar: BottomAppBar(
+        color: Colors.orange.shade100,
+        shape: const CircularNotchedRectangle(),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 2.0),
+          height: 60,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: IconButton(
+                  icon: const Icon(Icons.camera_alt, color: Colors.orange,),
+                  onPressed: _isAnalyzing ? null : _pickImageFromCamera,
+                  tooltip: 'Take Photo',
+                ),
+              ),
+              Expanded(
+                child: IconButton(
+                  icon: const Icon(Icons.photo_library, color: Colors.orange,),
+                  onPressed: _isAnalyzing ? null : _pickImageFromGallery,
+                  tooltip: 'Upload from Gallery',
+                ),
+              ),
+            ],
+          ),
+        )
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _isLoading ? null : _generateRecipe,
+        tooltip: 'Generate Recipe',
+        backgroundColor: Colors.orange,
+        child: _isLoading
+            ? const CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              )
+            : const Icon(Icons.restaurant_menu, color: Colors.white),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+
     );
   }
-
+  
   @override
   void dispose() {
     _ingredientsController.dispose();
