@@ -4,7 +4,6 @@ import 'dart:io';
 
 import 'package:align_app/models/recipe.dart';
 import 'package:align_app/utils/image_utils.dart';
-import 'package:align_app/utils/string_utils.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -172,7 +171,13 @@ class GroqAIService {
                     - Be specific: "red bell pepper" not "vegetable"
                     - Separate with commas
                     - Maximum 8 ingredients
-                    - No explanations, just the list''',
+                    - No explanations, just the list
+                    
+                    Response format - return EXACTLY this structure with no extra text:
+                    {"ingredients":["ingredient1","ingredient2","ingredient3"]}
+
+                    Provide the list of ingredients found in the image.
+                    ''',
                 },
                 {
                   'type': 'image_url',
@@ -203,7 +208,22 @@ class GroqAIService {
       }
 
       final content = data['choices'][0]['message']['content'] as String;
-      return StringUtils.parseIngredients(content);
+        print('Groq Vision Response Content: $content');
+      try {
+        final contentJson = jsonDecode(content);
+        if (contentJson['ingredients'] != null) {
+          return List<String>.from(contentJson['ingredients']);
+        }
+      } catch (_) {
+        // If JSON fails, parse as comma-separated
+        return content
+            .split(',')
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty)
+            .toList();
+      }
+
+      throw Exception('No ingredients found in the response');
     } catch (e) {
       if (e.toString().startsWith('Exception: ')) {
         rethrow;
