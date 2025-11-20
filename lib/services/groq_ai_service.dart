@@ -11,12 +11,15 @@ class GroqAIService {
   static String get _baseUrl => dotenv.env['AI_API_BASEURL'] ?? '';
   static String get _apiKey => dotenv.env['AI_API_KEY'] ?? '';
 
-  static Future<Recipe> generateRecipe(String ingredients) async {
+  static Future<Recipe> generateRecipe(List<String> ingredients) async {
     const String region = 'Philippines';
 
     if (_baseUrl.isEmpty || _apiKey.isEmpty) {
       throw Exception('API configuration missing. Check environment variables.');
     }
+
+  // Convert list to string
+  final ingredientsString = ingredients.join(', ');
 
     try {
       final response = await http.post(
@@ -91,7 +94,7 @@ class GroqAIService {
             },
             {
               'role': 'user',
-              'content': 'Create a recipe using these ingredients: $ingredients'
+              'content': 'Create a recipe using these ingredients: $ingredientsString'
             },
           ],
           'max_tokens': 1500,

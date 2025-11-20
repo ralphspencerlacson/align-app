@@ -147,7 +147,7 @@ class _GenerateRecipePageState extends State<GenerateRecipePage> {
     });
 
     try {
-      final recipe = await GroqAIService.generateRecipe(_ingredientsController.text.trim());
+      final recipe = await GroqAIService.generateRecipe(_ingredientsList);
 
       setState(() {
           _isLoading = false;
@@ -170,16 +170,36 @@ class _GenerateRecipePageState extends State<GenerateRecipePage> {
     }
   }
 
+  void _showUploadedImage() {
+    if (_selectedImage == null) return;
+
+    showDialog(
+      context: context, 
+      builder: (builder) => AlertDialog(
+        content: Image.file(_selectedImage!),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          )
+        ]
+      )
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 32.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 40),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+            SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 32.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+            const SizedBox(height: 20),
 
+            // Header Text
             const Text(
               'Enter ingredients or scan/upload an image from your fridge...',
               style: TextStyle(
@@ -188,25 +208,6 @@ class _GenerateRecipePageState extends State<GenerateRecipePage> {
               ),
             ),
             const SizedBox(height: 40),
-
-            if (_selectedImage != null) ...[
-              Container(
-                height: 200,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.file(
-                    _selectedImage!,
-                    fit: BoxFit.cover,
-                  ),
-                )
-              ),
-              const SizedBox(height: 10),
-            ],
 
             // Ingredient TextField
             Row(
@@ -222,10 +223,21 @@ class _GenerateRecipePageState extends State<GenerateRecipePage> {
                   ),
                 ),
                 const SizedBox(width: 10),
-                ElevatedButton(
+                TextButton(
                   onPressed: _addIngredient,
+                  style: TextButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 16.0,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
                   child: const Icon(Icons.add),
-                )
+                ),
               ],
             ),
             const SizedBox(height: 20),
@@ -269,28 +281,45 @@ class _GenerateRecipePageState extends State<GenerateRecipePage> {
                 )
               ),
             ],
+            const SizedBox(height: 100), // Add space for floating button
           ],
         ),
       ),
-      bottomNavigationBar: BottomAppBar(
+      
+      // Image Preview Button (positioned absolutely)
+      if (_selectedImage != null)
+        Positioned(
+          right: 20,
+          bottom: 20,
+          child: FloatingActionButton(
+            heroTag: "imagePreview",
+            onPressed: _showUploadedImage,
+            tooltip: 'View Uploaded Image',
+            backgroundColor: Colors.orange.shade100,
+            child: const Icon(Icons.image, color: Colors.orange),
+          ),
+        ),
+      ],
+    ),
+    bottomNavigationBar: BottomAppBar(
         color: Colors.orange.shade100,
         shape: const CircularNotchedRectangle(),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 2.0),
-          height: 60,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
                 child: IconButton(
-                  icon: const Icon(Icons.camera_alt, color: Colors.orange,),
+                  icon: const Icon(Icons.camera_alt, color: Colors.orange, size: 40),
                   onPressed: _isAnalyzing ? null : _pickImageFromCamera,
                   tooltip: 'Take Photo',
                 ),
               ),
+              const SizedBox(width: 90),
               Expanded(
                 child: IconButton(
-                  icon: const Icon(Icons.photo_library, color: Colors.orange,),
+                  icon: const Icon(Icons.photo_library, color: Colors.orange, size: 40,),
                   onPressed: _isAnalyzing ? null : _pickImageFromGallery,
                   tooltip: 'Upload from Gallery',
                 ),
@@ -299,17 +328,15 @@ class _GenerateRecipePageState extends State<GenerateRecipePage> {
           ),
         )
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.large(
         onPressed: _isLoading ? null : _generateRecipe,
         tooltip: 'Generate Recipe',
         backgroundColor: Colors.orange,
         child: _isLoading
-            ? const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              )
+            ? const CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.white),)
             : const Icon(Icons.restaurant_menu, color: Colors.white),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.miniCenterDocked,
 
     );
   }
